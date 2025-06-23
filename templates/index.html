@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gen AI Code Assistant - IBM Granite 3.3-2B</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Modern Color Palette */
+            --primary-color: #150f12;
+            --primary-light: #000000;
+            --primary-dark: #040109;
+            --secondary-color: #020303;
+            --accent-color: #0c0b08;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            
+            /* Background Colors */
+            --bg-primary: #09090c;
+            --bg-secondary: #140e13;
+            --bg-card: #8ba7a7e0;
+            --bg-elevated: #1e293b;
+            
+            /* Text Colors */
+            --text-primary: #fbfdfe;
+            --text-secondary: #08090a;
+            --text-muted: #121416;
+            
+            /* Border Colors */
+            --border-color: #2b3543;
+            --border-light: #4d5a6d;
+            
+            /* Gradients */
+            --gradient-primary: linear-gradient(135deg, #312643 0%, #a855f7 100%);
+            --gradient-secondary: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            --gradient-accent: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-light);
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(26, 26, 46, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-header {
+            background: var(--bg-elevated);
+            border-bottom: 1px solid var(--border-color);
+            border-radius: 16px 16px 0 0 !important;
+            padding: 1.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 600;
+            border: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn-warning {
+            background: var(--gradient-accent);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-info {
+            background: var(--gradient-secondary);
+            color: white;
+        }
+
+        .btn-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(6, 182, 212, 0.4);
+        }
+
+        .btn-success {
+            background: var(--gradient-success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Form Controls */
+        .form-control, .form-select {
+            background: var(--bg-elevated);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: var(--bg-elevated);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+            color: var(--text-primary);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Code Editor */
+        .code-editor {
+            background: #1a1a2e;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-family: 'Fira Code', 'Monaco', 'Consolas', 'Courier New', monospace;
+            min-height: 300px;
+            padding: 20px;
+            color: #e5e7eb;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .code-editor:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        }
+
+        /* Output Area */
+        .output-area {
+            background: #1a1a2e;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 200px;
+            white-space: pre-wrap;
+            font-family: 'Fira Code', 'Monaco', 'Consolas', 'Courier New', monospace;
+            color: #e5e7eb;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            overflow-y: auto;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(124, 58, 237, 0.1);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Feature Cards */
+        .feature-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border-color: var(--primary-color);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .feature-icon.primary { background: var(--gradient-primary); }
+        .feature-icon.warning { background: var(--gradient-accent); }
+        .feature-icon.info { background: var(--gradient-secondary); }
+        .feature-icon.success { background: var(--gradient-success); }
+
+        /* Tabs */
+        .nav-tabs {
+            border-bottom: 2px solid var(--border-color);
+            gap: 8px;
+        }
+
+        .nav-tabs .nav-link {
+            color: var(--text-secondary);
+            border: none;
+            border-radius: 12px 12px 0 0;
+            padding: 16px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: var(--text-primary);
+            background: rgba(124, 58, 237, 0.1);
+        }
+
+        .nav-tabs .nav-link.active {
+            background: var(--bg-card);
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .tab-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-radius: 0 0 16px 16px;
+            padding: 2rem;
+        }
+
+        /* Status Indicator */
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-online {
+            background: var(--success-color);
+        }
+
+        .status-offline {
+            background: var(--danger-color);
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Alerts */
+        .alert {
+            border-radius: 12px;
+            border: none;
+            padding: 1rem 1.5rem;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border-left: 4px solid var(--success-color);
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border-left: 4px solid var(--danger-color);
+        }
+
+        /* Floating Action Button */
+        .floating-action {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .floating-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            border: none;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .floating-btn:hover {
+            transform: scale(1.1) rotate(180deg);
+            box-shadow: 0 12px 35px rgba(124, 58, 237, 0.6);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .card {
+                margin-bottom: 1rem;
+            }
+            
+            .feature-card {
+                margin-bottom: 1rem;
+            }
+            
+            .nav-tabs .nav-link {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Custom Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-robot me-2"></i>
+                Gen AI Code Assistant
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text">
+                    <span class="status-indicator" id="modelStatus"></span>
+                    <span id="modelStatusText">Loading Model...</span>
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card fade-in">
+                    <div class="card-body text-center">
+                        <h1 class="display-5 mb-3 fw-bold">
+                            <i class="fas fa-code me-3"></i>
+                            AI-Powered Code Generation & Debugging
+                        </h1>
+                        <p class="lead text-muted mb-4">
+                            Powered by IBM Granite 3.3-2B Instruct Model
+                        </p>
+                        <div class="row mt-4">
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div class="feature-card card h-100">
+                                    <div class="card-body text-center">
+                                        <div class="feature-icon primary">
+                                            <i class="fas fa-magic"></i>
+                                        </div>
+                                        <h5 class="fw-bold">Code Generation</h5>
+                                        <p class="text-muted">Generate code from natural language descriptions</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div class="feature-card card h-100">
+                                    <div class="card-body text-center">
+                                        <div class="feature-icon warning">
+                                            <i class="fas fa-bug"></i>
+                                        </div>
+                                        <h5 class="fw-bold">Debug Assistant</h5>
+                                        <p class="text-muted">Find and fix bugs in your code</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div class="feature-card card h-100">
+                                    <div class="card-body text-center">
+                                        <div class="feature-icon info">
+                                            <i class="fas fa-lightbulb"></i>
+                                        </div>
+                                        <h5 class="fw-bold">Code Explanation</h5>
+                                        <p class="text-muted">Understand complex code with AI explanations</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div class="feature-card card h-100">
+                                    <div class="card-body text-center">
+                                        <div class="feature-icon success">
+                                            <i class="fas fa-rocket"></i>
+                                        </div>
+                                        <h5 class="fw-bold">Code Optimization</h5>
+                                        <p class="text-muted">Optimize code for better performance</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card slide-in">
+                    <div class="card-header">
+                        <ul class="nav nav-tabs card-header-tabs" id="mainTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="generate-tab" data-bs-toggle="tab" data-bs-target="#generate" type="button" role="tab">
+                                    <i class="fas fa-magic me-2"></i>Generate Code
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="debug-tab" data-bs-toggle="tab" data-bs-target="#debug" type="button" role="tab">
+                                    <i class="fas fa-bug me-2"></i>Debug Code
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="explain-tab" data-bs-toggle="tab" data-bs-target="#explain" type="button" role="tab">
+                                    <i class="fas fa-lightbulb me-2"></i>Explain Code
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="optimize-tab" data-bs-toggle="tab" data-bs-target="#optimize" type="button" role="tab">
+                                    <i class="fas fa-rocket me-2"></i>Optimize Code
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content" id="mainTabsContent">
+                        <!-- Generate Code Tab -->
+                        <div class="tab-pane fade show active" id="generate" role="tabpanel">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <h5 class="mb-3 fw-bold">Code Generation</h5>
+                                    <div class="mb-3">
+                                        <label for="generateLanguage" class="form-label">Programming Language</label>
+                                        <select class="form-select" id="generateLanguage">
+                                            <option value="python">Python</option>
+                                            <option value="javascript">JavaScript</option>
+                                            <option value="java">Java</option>
+                                            <option value="cpp">C++</option>
+                                            <option value="csharp">C#</option>
+                                            <option value="go">Go</option>
+                                            <option value="rust">Rust</option>
+                                            <option value="php">PHP</option>
+                                            <option value="ruby">Ruby</option>
+                                            <option value="swift">Swift</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="generatePrompt" class="form-label">Describe what you want to build</label>
+                                        <textarea class="form-control" id="generatePrompt" rows="6" placeholder="Describe the functionality you want to implement..."></textarea>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="generateMaxLength" class="form-label">Max Length</label>
+                                            <input type="number" class="form-control" id="generateMaxLength" value="1024" min="256" max="2048">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="generateTemperature" class="form-label">Temperature</label>
+                                            <input type="number" class="form-control" id="generateTemperature" value="0.7" min="0.1" max="1.0" step="0.1">
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary w-100" onclick="generateCode()">
+                                        <i class="fas fa-magic me-2"></i>Generate Code
+                                    </button>
+                                </div>
+                                <div class="col-lg-6">
+                                    <h5 class="mb-3 fw-bold">Generated Code</h5>
+                                    <div class="loading" id="generateLoading">
+                                        <div class="spinner"></div>
+                                        <p class="text-muted">Generating code...</p>
+                                    </div>
+                                    <div class="output-area" id="generateOutput" style="display: none;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Debug Code Tab -->
+                        <div class="tab-pane fade" id="debug" role="tabpanel">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <h5 class="mb-3 fw-bold">Debug Code</h5>
+                                    <div class="mb-3">
+                                        <label for="debugLanguage" class="form-label">Programming Language</label>
+                                        <select class="form-select" id="debugLanguage">
+                                            <option value="python">Python</option>
+                                            <option value="javascript">JavaScript</option>
+                                            <option value="java">Java</option>
+                                            <option value="cpp">C++</option>
+                                            <option value="csharp">C#</option>
+                                            <option value="go">Go</option>
+                                            <option value="rust">Rust</option>
+                                            <option value="php">PHP</option>
+                                            <option value="ruby">Ruby</option>
+                                            <option value="swift">Swift</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="debugCode" class="form-label">Paste your code here</label>
+                                        <textarea class="form-control code-editor" id="debugCode" rows="12" placeholder="Paste your code here for debugging..."></textarea>
+                                    </div>
+                                    <button class="btn btn-warning w-100" onclick="debugCode()">
+                                        <i class="fas fa-bug me-2"></i>Debug Code
+                                    </button>
+                                </div>
+                                <div class="col-lg-6">
+                                    <h5 class="mb-3 fw-bold">Debug Analysis</h5>
+                                    <div class="loading" id="debugLoading">
+                                        <div class="spinner"></div>
+                                        <p class="text-muted">Analyzing code...</p>
+                                    </div>
+                                    <div class="output-area" id="debugOutput" style="display: none;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Explain Code Tab -->
+                        <div class="tab-pane fade" id="explain" role="tabpanel">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <h5 class="mb-3 fw-bold">Explain Code</h5>
+                                    <div class="mb-3">
+                                        <label for="explainLanguage" class="form-label">Programming Language</label>
+                                        <select class="form-select" id="explainLanguage">
+                                            <option value="python">Python</option>
+                                            <option value="javascript">JavaScript</option>
+                                            <option value="java">Java</option>
+                                            <option value="cpp">C++</option>
+                                            <option value="csharp">C#</option>
+                                            <option value="go">Go</option>
+                                            <option value="rust">Rust</option>
+                                            <option value="php">PHP</option>
+                                            <option value="ruby">Ruby</option>
+                                            <option value="swift">Swift</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="explainCode" class="form-label">Code to explain</label>
+                                        <textarea class="form-control code-editor" id="explainCode" rows="12" placeholder="Paste code here for explanation..."></textarea>
+                                    </div>
+                                    <button class="btn btn-info w-100" onclick="explainCode()">
+                                        <i class="fas fa-lightbulb me-2"></i>Explain Code
+                                    </button>
+                                </div>
+                                <div class="col-lg-6">
+                                    <h5 class="mb-3 fw-bold">Code Explanation</h5>
+                                    <div class="loading" id="explainLoading">
+                                        <div class="spinner"></div>
+                                        <p class="text-muted">Generating explanation...</p>
+                                    </div>
+                                    <div class="output-area" id="explainOutput" style="display: none;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Optimize Code Tab -->
+                        <div class="tab-pane fade" id="optimize" role="tabpanel">
+                            <div class="row p-3">
+                                <div class="col-md-6">
+                                    <h5 class="mb-3">Optimize Code</h5>
+                                    <div class="mb-3">
+                                        <label for="optimizeLanguage" class="form-label">Programming Language</label>
+                                        <select class="form-select" id="optimizeLanguage">
+                                            <option value="python">Python</option>
+                                            <option value="javascript">JavaScript</option>
+                                            <option value="java">Java</option>
+                                            <option value="cpp">C++</option>
+                                            <option value="csharp">C#</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="optimizeCode" class="form-label">Code to optimize</label>
+                                        <textarea class="form-control code-editor" id="optimizeCode" rows="12" placeholder="Paste code here for optimization..."></textarea>
+                                    </div>
+                                    <button class="btn btn-success w-100" onclick="optimizeCode()">
+                                        <i class="fas fa-rocket me-2"></i>Optimize Code
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="mb-3">Optimized Code</h5>
+                                    <div class="output-area" id="optimizeOutput"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div style="position: fixed; bottom: 30px; right: 30px; z-index: 1000;">
+        <button class="btn btn-danger btn-lg rounded-circle" onclick="clearAll()" title="Clear All">
+            <i class="fas fa-trash"></i>
+        </button>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script>
+        // Global variables
+        let modelStatus = 'loading';
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            checkModelStatus();
+            setInterval(checkModelStatus, 30000); // Check every 30 seconds
+        });
+
+        // Check model status
+        async function checkModelStatus() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                
+                const statusIndicator = document.getElementById('modelStatus');
+                const statusText = document.getElementById('modelStatusText');
+                
+                if (data.model_loaded && data.tokenizer_loaded) {
+                    statusIndicator.className = 'status-indicator status-online';
+                    statusText.textContent = 'Model Ready';
+                    modelStatus = 'ready';
+                } else {
+                    statusIndicator.className = 'status-indicator status-offline';
+                    statusText.textContent = 'Model Loading...';
+                    modelStatus = 'loading';
+                }
+            } catch (error) {
+                const statusIndicator = document.getElementById('modelStatus');
+                const statusText = document.getElementById('modelStatusText');
+                statusIndicator.className = 'status-indicator status-offline';
+                statusText.textContent = 'Model Error';
+                modelStatus = 'error';
+            }
+        }
+
+        // Generate code
+        async function generateCode() {
+            if (modelStatus !== 'ready') {
+                showAlert('Model is not ready yet. Please wait...', 'danger');
+                return;
+            }
+
+            const prompt = document.getElementById('generatePrompt').value.trim();
+            const language = document.getElementById('generateLanguage').value;
+            const maxLength = parseInt(document.getElementById('generateMaxLength').value);
+            const temperature = parseFloat(document.getElementById('generateTemperature').value);
+
+            if (!prompt) {
+                showAlert('Please enter a description of what you want to build.', 'danger');
+                return;
+            }
+
+            showLoading('generate');
+            
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        language: language,
+                        max_length: maxLength,
+                        temperature: temperature
+                    })
+                });
+
+                const data = await response.json();
+                hideLoading('generate');
+
+                if (data.error) {
+                    showAlert(data.error, 'danger');
+                } else {
+                    displayOutput('generateOutput', data.response, language);
+                }
+            } catch (error) {
+                hideLoading('generate');
+                showAlert('Error generating code: ' + error.message, 'danger');
+            }
+        }
+
+        // Debug code
+        async function debugCode() {
+            if (modelStatus !== 'ready') {
+                showAlert('Model is not ready yet. Please wait...', 'danger');
+                return;
+            }
+
+            const code = document.getElementById('debugCode').value.trim();
+            const language = document.getElementById('debugLanguage').value;
+
+            if (!code) {
+                showAlert('Please paste some code to debug.', 'danger');
+                return;
+            }
+
+            showLoading('debug');
+            
+            try {
+                const response = await fetch('/api/debug', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        language: language
+                    })
+                });
+
+                const data = await response.json();
+                hideLoading('debug');
+
+                if (data.error) {
+                    showAlert(data.error, 'danger');
+                } else {
+                    displayOutput('debugOutput', data.response);
+                }
+            } catch (error) {
+                hideLoading('debug');
+                showAlert('Error debugging code: ' + error.message, 'danger');
+            }
+        }
+
+        // Explain code
+        async function explainCode() {
+            if (modelStatus !== 'ready') {
+                showAlert('Model is not ready yet. Please wait...', 'danger');
+                return;
+            }
+
+            const code = document.getElementById('explainCode').value.trim();
+            const language = document.getElementById('explainLanguage').value;
+
+            if (!code) {
+                showAlert('Please paste some code to explain.', 'danger');
+                return;
+            }
+
+            showLoading('explain');
+            
+            try {
+                const response = await fetch('/api/explain', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        language: language
+                    })
+                });
+
+                const data = await response.json();
+                hideLoading('explain');
+
+                if (data.error) {
+                    showAlert(data.error, 'danger');
+                } else {
+                    displayOutput('explainOutput', data.response);
+                }
+            } catch (error) {
+                hideLoading('explain');
+                showAlert('Error explaining code: ' + error.message, 'danger');
+            }
+        }
+
+        // Optimize code
+        async function optimizeCode() {
+            if (modelStatus !== 'ready') {
+                showAlert('Model is not ready yet. Please wait...', 'danger');
+                return;
+            }
+
+            const code = document.getElementById('optimizeCode').value.trim();
+            const language = document.getElementById('optimizeLanguage').value;
+
+            if (!code) {
+                showAlert('Please paste some code to optimize.', 'danger');
+                return;
+            }
+
+            showLoading('optimize');
+            
+            try {
+                const response = await fetch('/api/optimize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        language: language
+                    })
+                });
+
+                const data = await response.json();
+                hideLoading('optimize');
+
+                if (data.error) {
+                    showAlert(data.error, 'danger');
+                } else {
+                    displayOutput('optimizeOutput', data.response);
+                }
+            } catch (error) {
+                hideLoading('optimize');
+                showAlert('Error optimizing code: ' + error.message, 'danger');
+            }
+        }
+
+        // Utility functions
+        function showLoading(type) {
+            document.getElementById(type + 'Loading').style.display = 'block';
+            document.getElementById(type + 'Output').style.display = 'none';
+        }
+
+        function hideLoading(type) {
+            document.getElementById(type + 'Loading').style.display = 'none';
+        }
+
+        function displayOutput(outputId, content, language = null) {
+            const outputElement = document.getElementById(outputId);
+            outputElement.style.display = 'block';
+            
+            // Format the content with syntax highlighting if it's code
+            if (language && content.includes('```')) {
+                // Extract code blocks and apply syntax highlighting
+                content = content.replace(/```(\w+)?\n([\s\S]*?)```/g, function(match, lang, code) {
+                    const codeLang = lang || language;
+                    return `<pre><code class="language-${codeLang}">${escapeHtml(code.trim())}</code></pre>`;
+                });
+                outputElement.innerHTML = content;
+                
+                // Apply Prism highlighting
+                if (window.Prism) {
+                    Prism.highlightAllUnder(outputElement);
+                }
+            } else {
+                outputElement.textContent = content;
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.querySelector('.container');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        function clearAll() {
+            // Clear all textareas
+            document.getElementById('generatePrompt').value = '';
+            document.getElementById('debugCode').value = '';
+            document.getElementById('explainCode').value = '';
+            document.getElementById('optimizeCode').value = '';
+            
+            // Clear all outputs
+            const outputs = ['generateOutput', 'debugOutput', 'explainOutput', 'optimizeOutput'];
+            outputs.forEach(id => {
+                document.getElementById(id).style.display = 'none';
+                document.getElementById(id).textContent = '';
+            });
+            
+            showAlert('All content cleared!', 'success');
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'Enter':
+                        e.preventDefault();
+                        const activeTab = document.querySelector('.nav-link.active');
+                        if (activeTab.id === 'generate-tab') {
+                            generateCode();
+                        } else if (activeTab.id === 'debug-tab') {
+                            debugCode();
+                        } else if (activeTab.id === 'explain-tab') {
+                            explainCode();
+                        } else if (activeTab.id === 'optimize-tab') {
+                            optimizeCode();
+                        }
+                        break;
+                    case 'k':
+                        e.preventDefault();
+                        clearAll();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html> 
